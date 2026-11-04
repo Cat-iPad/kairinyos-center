@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>カイリーニョス対応センター 経路案内</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2236%22 fill=%22%230a6cff%22/></svg>">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fafafa;--fg:#111;--mut:#6b7280;--line:#e5e7eb;--card:#fff;--ac:#111;--acf:#fff;--ok:#16a34a;--warn:#d97706;--alert:#dc2626}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0b0c;--fg:#f3f4f6;--mut:#9ca3af;--line:#26272b;--card:#141416;--ac:#f3f4f6;--acf:#111;--ok:#4ade80;--warn:#fbbf24;--alert:#f87171}}
+:root[data-theme="dark"]{--bg:#0b0b0c;--fg:#f3f4f6;--mut:#9ca3af;--line:#26272b;--card:#141416;--ac:#f3f4f6;--acf:#111;--ok:#4ade80;--warn:#fbbf24;--alert:#f87171}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.1rem;font-weight:700;margin:0 0 20px;letter-spacing:.02em}
+h2{font-size:.8rem;font-weight:600;color:var(--mut);margin:28px 0 8px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{flex:1;border:0;border-right:1px solid var(--line);background:none;color:var(--mut);font:inherit;font-size:.9rem;padding:10px 0;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--ac);color:var(--acf);font-weight:600}
+.go{width:100%;margin-top:14px;padding:14px;border:0;border-radius:10px;background:var(--ac);color:var(--acf);font:inherit;font-weight:600;cursor:pointer}
+.sub{font-size:.8rem;color:var(--mut);margin-top:8px;min-height:1.2em}
+.state{display:flex;gap:10px;align-items:flex-start;margin-top:20px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:.9rem}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:7px;flex:none}
+.state b{display:block}
+.hero{margin-top:14px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.tag{font-size:.75rem;color:var(--mut)}
+.hero .nm{font-size:1.25rem;font-weight:700;margin:4px 0 14px}
+.big{display:flex;align-items:center;gap:18px}
+.arr{width:64px;height:64px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;flex:none}
+.arr i{font-style:normal;font-size:1.8rem;line-height:1;transition:transform .3s}
+.km{font-size:2rem;font-weight:700;line-height:1.1}.km small{font-size:.9rem;font-weight:400;color:var(--mut)}
+.met{color:var(--mut);font-size:.85rem}
+.lnk{display:block;text-align:center;text-decoration:none;color:var(--acf);background:var(--ac);border-radius:10px;padding:12px;margin-top:16px;font-weight:600}
+.lnk.o{background:none;color:var(--fg);border:1px solid var(--line);margin-top:8px;font-weight:500}
+.rk{display:inline-block;font-size:.7rem;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:0 6px;margin-right:6px;color:var(--mut)}
+.rk.S{background:var(--ac);color:var(--acf);border-color:var(--ac)}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row a{color:var(--fg);font-size:.8rem;white-space:nowrap}
+.row .t{min-width:0}.row .t div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.box{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:4px 14px}
+input{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);margin-bottom:8px}
+.more{width:100%;background:none;border:0;color:var(--mut);font:inherit;font-size:.85rem;padding:12px;cursor:pointer}
+footer{margin-top:32px;font-size:.72rem;color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+<h1>カイリーニョス対応センター 経路案内</h1>
+
+<h2>危険度</h2>
+<div class="seg" id="lv"></div>
+<h2>移動手段</h2>
+<div class="seg" id="mv"></div>
+<button class="go" id="loc">現在地から探す</button>
+<div class="sub" id="st">位置情報が使えないときは、下の一覧から地名で探せます。</div>
+
+<div id="state"></div>
+<div id="hero"></div>
+<div id="near"></div>
+
+<h2>センター一覧</h2>
+<input id="q" type="search" placeholder="地名で検索（例：三宮、京都）">
+<div class="seg" id="rk"></div>
+<div class="box" id="all" style="margin-top:8px"></div>
+<button class="more" id="more"></button>
+
+<footer>設定をもとにした二次創作です。センターの位置は駅名・市名を基準にした概算です。位置情報はこの端末の中だけで使われ、保存されません。</footer>
+</main>
+<script>
+var C=[["加東","S",34.919,134.969],["西脇","A",34.987,134.972],["小野","A",34.852,134.93],["多可","B",35.03,134.976],["加西","A",34.935,134.85],["加古川","A",34.757,134.841],["明石駅前","A",34.6414,134.9926],["西明石駅前","A",34.6572,134.9573],["藤江駅前","A",34.6451,134.948],["舞子公園","A",34.6318,135.023],["姫路駅前","S",34.827,134.69],["網干","A",34.769,134.59],["曽根","A",34.764,134.77],["姫路港","A",34.79,134.72],["魚住","A",34.677,134.889],["垂水駅前","A",34.629,135.069],["須磨","A",34.646,135.125],["新長田","S",34.667,135.144],["長田","A",34.659,135.156],["西代","A",34.664,135.129],["和田岬","A",34.654,135.165],["神戸駅前","A",34.68,135.178],["元町・中華街","S",34.689,135.187],["三宮駅前","S",34.694,135.195],["三宮センター街","A",34.693,135.192],["フェリーターミナル","S",34.677,135.202],["脇浜","S",34.7,135.222],["六甲道","A",34.708,135.237],["住吉駅前","S",34.719,135.261],["魚崎駅前","S",34.716,135.287],["御影駅前","A",34.728,135.268],["芦屋","A",34.729,135.304],["夙川","A",34.74,135.329],["今津","A",34.748,135.348],["西宮北口駅前","S",34.743,135.359],["尼崎","A",34.733,135.407],["大阪","S",34.7025,135.4959],["三木","A",34.79,134.998],["三田","S",34.889,135.228],["丹波","A",35.09,135.06],["篠山","A",35.075,135.216],["福知山","A",35.297,135.126],["大阪難波","S",34.666,135.501],["りんくうタウン","S",34.404,135.289],["関西国際空港","A",34.435,135.244],["和歌山","S",34.23,135.191],["白浜","B",33.677,135.356],["橋本","A",34.315,135.607],["串本","A",33.473,135.79],["新宮","A",33.726,135.993],["橿原","A",34.509,135.793],["奈良","S",34.685,135.805],["生駒","A",34.693,135.7],["高槻","A",34.851,135.617],["京都","S",34.986,135.759],["烏丸","A",35.004,135.759],["大津","S",35.004,135.869],["守山","A",35.058,135.994],["志摩","A",34.33,136.83],["伊勢","A",34.491,136.709],["松阪","A",34.578,136.527],["津","S",34.73,136.509],["名古屋駅前","S",35.171,136.882],["名古屋栄","A",35.17,136.908],["山崎","A",35.003,134.545],["神河","A",35.03,134.77],["赤穂","A",34.745,134.391],["相生","S",34.804,134.467],["上郡","A",34.88,134.359],["佐用","A",34.997,134.356],["朝来","A",35.31,134.83],["養父","A",35.39,134.75],["豊岡","S",35.544,134.82]];
+var RK={S:3,A:2,B:1},$=function(i){return document.getElementById(i)};
+var S={lv:0,mv:"walking",rk:"all",q:"",full:false,pos:null};
+var LV=["0 無害","1 低","2 警戒","3 高","4 重大","5 最高"],
+MV=[["walking","徒歩"],["transit","電車"],["bicycling","自転車"],["driving","車"]],
+RKS=[["all","すべて"],["S","S級"],["A","A級"],["B","B級"]];
+var ST=[
+ ["ok","通常運用中","平常時は、S級を除くC〜A級センターを無料のネットカフェとして使えます。"],
+ ["ok","通常運用中","追跡モードを持たない個体です。そのままで大丈夫です。"],
+ ["warn","警戒運用中","周囲に知らせて避難し、B級以上のセンターへ。電波遮断区画のスタッフに状況を伝えてください。"],
+ ["warn","警戒運用中","今すぐA級以上のセンターへ。逃げてください。"],
+ ["alert","緊急対応モード","複数個体が連携しています。S級特殊対応センターへ向かってください。"],
+ ["alert","緊急対応モード","通常のセンターでは対応できません。最寄りのS級へ向かってください。"]];
+var need=function(l){return l>=4?3:l==3?2:l==2?1:0};
+function seg(id,items,key){var e=$(id);e.innerHTML="";items.forEach(function(it){var b=document.createElement("button");
+ b.textContent=it[1];b.setAttribute("aria-pressed",S[key]==it[0]);b.onclick=function(){S[key]=it[0];if(key=="rk"||key=="mv"||key=="lv"){}
+ seg(id,items,key);draw()};e.appendChild(b)})}
+function hav(a,b,c,d){var r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);
+ return 12742*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y))}
+function brg(a,b,c,d){var r=Math.PI/180,y=Math.sin((d-b)*r)*Math.cos(c*r),x=Math.cos(a*r)*Math.sin(c*r)-Math.sin(a*r)*Math.cos(c*r)*Math.cos((d-b)*r);return(Math.atan2(y,x)/r+360)%360}
+function dir(b){return["北","北東","東","南東","南","南西","西","北西"][Math.round(b/45)%8]}
+function eta(k,m){var v={walking:5,bicycling:15,driving:35,transit:25}[m],n=Math.max(1,Math.round(k*1.3/v*60));return n>=60?Math.floor(n/60)+"時間"+n%60+"分":n+"分"}
+function esc(s){return String(s).replace(/[&<>"]/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]})}
+function rt(c){return"https://www.google.com/maps/dir/?api=1&origin="+S.pos.la+","+S.pos.lo+"&destination="+c.la+","+c.lo+"&travelmode="+S.mv}
+function pl(c){return"https://www.google.com/maps/search/?api=1&query="+c.la+","+c.lo}
+var L=C.map(function(c){return{n:c[0],k:c[1],la:c[2],lo:c[3]}});
+function row(c){var d=c.d!=null?c.d.toFixed(1)+" km":"";
+ return'<div class="row"><div class="t"><div><span class="rk '+c.k+'">'+c.k+'</span>'+esc(c.n)+'</div><div class="met">'+d+'</div></div><a href="'+(S.pos?rt(c):pl(c))+'" target="_blank" rel="noopener">'+(S.pos?"経路":"地図")+' ↗</a></div>'}
+function draw(){
+ var s=ST[S.lv];
+ $("state").innerHTML='<div class="state"><span class="dot" style="background:var(--'+s[0]+')"></span><div><b>'+s[1]+'</b>'+s[2]+'</div></div>';
+ if(S.pos){L.forEach(function(c){c.d=hav(S.pos.la,S.pos.lo,c.la,c.lo)})}
+ var el=S.pos?L.filter(function(c){return RK[c.k]>=need(S.lv)}).sort(function(a,b){return a.d-b.d}):[];
+ if(el.length){var h=el[0],b=brg(S.pos.la,S.pos.lo,h.la,h.lo),ns=el.filter(function(c){return c.k=="S"})[0];
+  $("hero").innerHTML='<div class="hero"><div class="tag">最寄りの対応センター</div><div class="nm"><span class="rk '+h.k+'">'+h.k+'級</span>'+esc(h.n)+'</div>'+
+  '<div class="big"><div class="arr" aria-hidden="true"><i style="transform:rotate('+b+'deg)">↑</i></div><div><div class="km">'+h.d.toFixed(1)+'<small> km</small></div><div class="met">'+dir(b)+'方向 ・ '+eta(h.d,S.mv)+'（目安）</div></div></div>'+
+  '<a class="lnk" href="'+rt(h)+'" target="_blank" rel="noopener">Googleマップで経路を開く</a>'+
+  (ns&&ns!==h?'<a class="lnk o" href="'+rt(ns)+'" target="_blank" rel="noopener">最寄りのS級：'+esc(ns.n)+'（'+ns.d.toFixed(0)+' km）</a>':'')+'</div>';
+  $("near").innerHTML='<h2>ほかの候補</h2><div class="box">'+el.slice(1,4).map(row).join("")+'</div>';
+ }else{$("hero").innerHTML="";$("near").innerHTML=""}
+ var q=S.q.trim(),a=(S.pos?L.slice().sort(function(a,b){return a.d-b.d}):L).filter(function(c){return(S.rk=="all"||c.k==S.rk)&&(!q||c.n.indexOf(q)>=0)});
+ var v=S.full||q?a:a.slice(0,8);
+ $("all").innerHTML=v.length?v.map(row).join(""):'<div class="row met">該当するセンターがありません</div>';
+ $("more").style.display=(!S.full&&!q&&a.length>8)?"block":"none";$("more").textContent="すべて表示（"+a.length+"件）";
+}
+$("loc").onclick=function(){var st=$("st");
+ if(!navigator.geolocation){st.textContent="この端末では位置情報を取得できません。";return}
+ st.textContent="現在地を取得中…";
+ navigator.geolocation.getCurrentPosition(function(p){S.pos={la:p.coords.latitude,lo:p.coords.longitude};
+  st.textContent="現在地を取得しました（誤差 約"+Math.round(p.coords.accuracy)+"m）";draw()},
+ function(){st.textContent="取得できませんでした。許可設定を確認してください。"},{enableHighAccuracy:true,timeout:15000,maximumAge:30000})};
+$("q").oninput=function(){S.q=this.value;draw()};
+$("more").onclick=function(){S.full=true;draw()};
+seg("lv",LV.map(function(t,i){return[i,t.split(" ")[0]]}),"lv");
+seg("mv",MV,"mv");seg("rk",RKS,"rk");draw();
+</script>
+</body>
+</html>
